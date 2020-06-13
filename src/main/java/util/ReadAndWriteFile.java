@@ -1,8 +1,8 @@
 package util;
 
-import classFiles.Balance;
-import classFiles.Payment;
-import classFiles.Transaction;
+import dto.BalanceDto;
+import dto.PaymentDto;
+import dto.TransactionDto;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -19,23 +18,25 @@ import java.util.stream.Stream;
 
 public class ReadAndWriteFile {
 
-    public static long paymentSum = 0;
+    public final Logger logger = Logger.getLogger(ReadAndWriteFile.class);
+    public long paymentSum = 0;
 
-    public void timeCreationFileWriter(Path path, long deptorDepositAmount, int rowCount){
+    public void timeCreationFileWriter(Path path, long deptorDepositAmount, int rowCount) throws Exception {
 
-        try(BufferedWriter writer = Files.newBufferedWriter(path)){
+        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
 
             String text = "";
 
-            if(path.toString().contains(FileTypeEnum.PAYMENT.getFileType())){
-                 text = createPaymentFile(deptorDepositAmount, rowCount);
-            } else{
+            if (path.toString().contains(FileTypeEnum.PAYMENT.getFileType())) {
+                text = createPaymentFile(deptorDepositAmount, rowCount);
+            } else {
                 text = createBalanceFile(deptorDepositAmount, rowCount);
             }
             writer.write(text);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            throw new Exception();
         }
     }
 
@@ -49,14 +50,14 @@ public class ReadAndWriteFile {
 
             String creditorDepositNumber = "1.20.100." + i;
             long creditorDepositAmount = randomNum;
-            Payment payment = new Payment(creditorDepositNumber, creditorDepositAmount, DepositTypeEnum.CREDITOR.getDepositType());
+            PaymentDto payment = new PaymentDto(creditorDepositNumber, creditorDepositAmount, DepositTypeEnum.CREDITOR.getDepositType());
 
             paymentRow.append(payment.toString());
 
             paymentSum += randomNum;
         }
         String debtorDepositNumber = "1.10.100.1";
-        Payment payment = new Payment(debtorDepositNumber, deptorDepositAmount, DepositTypeEnum.DEBTOR.getDepositType());
+        PaymentDto payment = new PaymentDto(debtorDepositNumber, deptorDepositAmount, DepositTypeEnum.DEBTOR.getDepositType());
 
         paymentRow.append(payment.toString());
 
@@ -67,53 +68,53 @@ public class ReadAndWriteFile {
 
         StringBuilder balanceRow = new StringBuilder();
 
-        for(int i=0; i<rowCount; i++) {
+        for (int i = 0; i < rowCount; i++) {
 
             String creatorDepositNumber = "1.20.100." + i;
             long creatorDepositAmount = 0;
-            Balance balance = new Balance(creatorDepositNumber, creatorDepositAmount);
+            BalanceDto balanceDto = new BalanceDto(creatorDepositNumber, creatorDepositAmount);
 
-            balanceRow.append(balance.toString());
+            balanceRow.append(balanceDto.toString());
         }
 
         String depositNumber = "1.10.100.1";
-        Balance balance = new Balance(depositNumber, deptorDepositAmount);
+        BalanceDto balanceDto = new BalanceDto(depositNumber, deptorDepositAmount);
 
-        balanceRow.append(balance.toString());
+        balanceRow.append(balanceDto.toString());
 
         return balanceRow.toString();
     }
 
-    public static void transactionFileWriter(Path path, ArrayList<Transaction> transactions) throws IOException {
+    public void transactionFileWriter(Path path, List<TransactionDto> transactions) throws IOException {
 
-        StringBuffer sb = new StringBuffer();
-        for(Transaction tr :transactions){
-            sb.append(tr);
+        StringBuffer stringBuffer = new StringBuffer();
+        for (TransactionDto transactionDto : transactions) {
+            stringBuffer.append(transactionDto);
         }
         if (!Files.exists(path))
             Files.createFile(path);
-        Files.write(path, sb.toString().getBytes(), StandardOpenOption.APPEND);
+        Files.write(path, stringBuffer.toString().getBytes(), StandardOpenOption.APPEND);
     }
 
-    public static void balanceFileWriter(Path path, ArrayList<Balance> balances) throws IOException {
+    public void balanceFileWriter(Path path, List<BalanceDto> balances) throws IOException {
 
-        StringBuffer sb = new StringBuffer();
-        for(Balance ba :balances){
-            sb.append(ba);
+        StringBuffer stringBuffer = new StringBuffer();
+        for (BalanceDto balanceDto : balances) {
+            stringBuffer.append(balanceDto);
         }
         if (!Files.exists(path))
             Files.createFile(path);
-        Files.write(path, sb.toString().getBytes());
+        Files.write(path, stringBuffer.toString().getBytes());
     }
 
-    public static ArrayList<Payment> paymentFileReader(Path path) throws IOException {
+    public List<PaymentDto> paymentFileReader(Path path) throws IOException {
 
-        ArrayList<Payment> payments = new ArrayList<Payment>();
+        List<PaymentDto> payments = new ArrayList<>();
 
         Stream<String> fileStream = Files.lines(path);
         List<String> rowlist = fileStream.collect(Collectors.toList());
 
-        for (String strPayment :rowlist){
+        for (String strPayment : rowlist) {
 
             String[] paymentArray = strPayment.split(" ");
 
@@ -121,33 +122,31 @@ public class ReadAndWriteFile {
             String depositNumber = paymentArray[1];
             long depositAmount = Long.parseLong(paymentArray[2]);
 
-            Payment payment = new Payment(depositNumber, depositAmount, depositType);
+            PaymentDto payment = new PaymentDto(depositNumber, depositAmount, depositType);
             payments.add(payment);
         }
 
         return payments;
     }
 
-    public static ArrayList<Balance> balanceFileReader(Path path) throws IOException {
+    public List<BalanceDto> balanceFileReader(Path path) throws IOException {
 
-        ArrayList<Balance> balances = new ArrayList<Balance>();
+        List<BalanceDto> balanceDtos = new ArrayList<>();
 
         Stream<String> fileStream = Files.lines(path);
         List<String> rowlist = fileStream.collect(Collectors.toList());
 
-        for (String strBalance :rowlist){
+        for (String strBalance : rowlist) {
 
             String[] balanceArray = strBalance.split(" ");
 
             String depositNumber = balanceArray[0];
             long depositAmount = Long.parseLong(balanceArray[1]);
 
-            Balance balance = new Balance(depositNumber, depositAmount);
-            balances.add(balance);
+            BalanceDto balanceDto = new BalanceDto(depositNumber, depositAmount);
+            balanceDtos.add(balanceDto);
         }
 
-        return balances;
+        return balanceDtos;
     }
-
-    public static final Logger logger = Logger.getLogger(ReadAndWriteFile.class);
 }

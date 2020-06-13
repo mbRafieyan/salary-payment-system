@@ -2,7 +2,8 @@ package util;
 
 public enum DepositTypeEnum {
 
-    DEBTOR("debtor"),CREDITOR("creditor");
+    DEBTOR("debtor"),
+    CREDITOR("creditor");
 
     private final String depositType;
 

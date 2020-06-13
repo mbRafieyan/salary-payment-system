@@ -1,15 +1,15 @@
-package classFiles;
+package dto;
 
-public class Balance {
+public class PaymentDto {
 
     private String depositNumber;
     private long depositAmount;
+    private String depositType;
 
-    public Balance() { }
-
-    public Balance(String depositNumber, long depositAmount) {
+    public PaymentDto(String depositNumber, long depositAmount, String depositType) {
         this.depositNumber = depositNumber;
         this.depositAmount = depositAmount;
+        this.depositType = depositType;
     }
 
     public void setDepositNumber(String depositNumber) {
@@ -20,6 +20,10 @@ public class Balance {
         this.depositAmount = depositAmount;
     }
 
+    public void setDepositType(String depositType) {
+        this.depositType = depositType;
+    }
+
     public String getDepositNumber() {
         return depositNumber;
     }
@@ -28,8 +32,12 @@ public class Balance {
         return depositAmount;
     }
 
+    public String getDepositType() {
+        return depositType;
+    }
+
     @Override
     public String toString() {
-        return depositNumber + " " + depositAmount + System.lineSeparator();
+        return depositType + " " + depositNumber + " " + depositAmount + System.lineSeparator();
     }
 }

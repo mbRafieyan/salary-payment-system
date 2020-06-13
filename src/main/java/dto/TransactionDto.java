@@ -1,12 +1,12 @@
-package classFiles;
+package dto;
 
-public class Transaction {
+public class TransactionDto {
 
     private String debtorDepositNumber;
     private String creditorDepositNumber;
     private long transactionAmount;
 
-    public Transaction(String debtorDepositNumber, String creditorDepositNumber, long transactionAmount) {
+    public TransactionDto(String debtorDepositNumber, String creditorDepositNumber, long transactionAmount) {
         this.debtorDepositNumber = debtorDepositNumber;
         this.creditorDepositNumber = creditorDepositNumber;
         this.transactionAmount = transactionAmount;
@@ -36,9 +36,8 @@ public class Transaction {
         return transactionAmount;
     }
 
-
     @Override
     public String toString() {
-        return debtorDepositNumber + " " + creditorDepositNumber + " " +  transactionAmount + System.lineSeparator();
+        return debtorDepositNumber + " " + creditorDepositNumber + " " + transactionAmount + System.lineSeparator();
     }
 }
