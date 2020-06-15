@@ -6,6 +6,9 @@ public class PaymentDto {
     private long depositAmount;
     private String depositType;
 
+    public PaymentDto() {
+    }
+
     public PaymentDto(String depositNumber, long depositAmount, String depositType) {
         this.depositNumber = depositNumber;
         this.depositAmount = depositAmount;

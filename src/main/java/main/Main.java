@@ -13,9 +13,9 @@ public class Main {
 
     public static final Logger logger = Logger.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 
-        int fileRowCount = 5;
+        int fileRowCount = 1;
         long deptorDepositAmount = 10000;
 
         try {
@@ -26,18 +26,20 @@ public class Main {
             SalaryPaymentServer salaryPaymentServer = new SalaryPaymentServer();
             salaryPaymentServer.createFile(deptorDepositAmount, fileRowCount);
 
-            String message = salaryPaymentServer.salaryPayment(deptorDepositAmount);
+            salaryPaymentServer.salaryPaymentThreadsExecuter(deptorDepositAmount);
 
-            System.out.println(message);
+            System.out.println("***** FINISHED *****");
 
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
+            throw new IOException();
 
         } catch (LackSufficientBalanceException e) {
             System.err.print(e);
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            throw new Exception();
         }
     }
 }
