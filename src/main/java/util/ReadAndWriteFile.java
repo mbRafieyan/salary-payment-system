@@ -19,7 +19,6 @@ import java.util.stream.Stream;
 public class ReadAndWriteFile {
 
     public final Logger logger = Logger.getLogger(ReadAndWriteFile.class);
-    public long paymentSum = 0;
 
     public void timeCreationFileWriter(Path path, long deptorDepositAmount, int rowCount) throws Exception {
 
@@ -53,8 +52,6 @@ public class ReadAndWriteFile {
             PaymentDto payment = new PaymentDto(creditorDepositNumber, creditorDepositAmount, DepositTypeEnum.CREDITOR.getDepositType());
 
             paymentRow.append(payment.toString());
-
-            paymentSum += randomNum;
         }
         String debtorDepositNumber = "1.10.100.1";
         PaymentDto payment = new PaymentDto(debtorDepositNumber, deptorDepositAmount, DepositTypeEnum.DEBTOR.getDepositType());

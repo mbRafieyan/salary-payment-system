@@ -15,8 +15,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        int fileRowCount = 1;
-        long deptorDepositAmount = 10000;
+        int fileRowCount = 100;
+        long deptorDepositAmount = 1000000;
 
         try {
 

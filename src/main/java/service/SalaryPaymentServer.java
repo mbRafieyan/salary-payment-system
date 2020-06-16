@@ -34,7 +34,7 @@ public class SalaryPaymentServer {
         ReadAndWriteFile readAndWriteFile = new ReadAndWriteFile();
         SalaryPaymentServer salaryPaymentServer = new SalaryPaymentServer();
 
-        if (deptorDepositAmount > readAndWriteFile.paymentSum) {
+        if (deptorDepositAmount > calculateSumPayments(paymentPath)) {
 
             for (int i = 0; i < paymentRowCount - 1; i++) {
 
