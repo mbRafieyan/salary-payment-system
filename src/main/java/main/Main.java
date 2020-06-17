@@ -4,10 +4,11 @@ import exception.LackSufficientBalanceException;
 import org.apache.log4j.Logger;
 import service.SalaryPaymentServer;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
+import java.util.concurrent.CountDownLatch;
 
 public class Main {
 
@@ -15,8 +16,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        int fileRowCount = 100;
-        long deptorDepositAmount = 1000000;
+        int fileRowCount = 10000;
+        long deptorDepositAmount = 1000000000;
 
         try {
 
@@ -26,18 +27,18 @@ public class Main {
             SalaryPaymentServer salaryPaymentServer = new SalaryPaymentServer();
             salaryPaymentServer.createFile(deptorDepositAmount, fileRowCount);
 
-            salaryPaymentServer.salaryPaymentThreadsExecuter(deptorDepositAmount);
+            CountDownLatch latch = salaryPaymentServer.salaryPaymentThreadsExecuter(deptorDepositAmount);
 
-            System.out.println("***** FINISHED *****");
-
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            throw new IOException();
+            latch.await();
+            System.out.println("********** FINISHED PROCESS **********");
 
         } catch (LackSufficientBalanceException e) {
-            System.err.print(e);
+
+            logger.error(e.getMessage(), e);
+            System.err.print(e.getMessage());
 
         } catch (Exception e) {
+
             logger.error(e.getMessage(), e);
             throw new Exception();
         }

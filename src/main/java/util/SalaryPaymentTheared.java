@@ -4,51 +4,46 @@ import dto.BalanceDto;
 import dto.PaymentDto;
 import main.Main;
 import org.apache.log4j.Logger;
-import service.SalaryPaymentServer;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class SalaryPaymentTheared implements Runnable {
 
     public static final Logger logger = Logger.getLogger(Main.class);
 
-    private final String baseDirectory = "..\\..\\SalaryPayment\\%s.txt";
-
-    private SalaryPaymentServer salaryPaymentServer;
-    private ReadAndWriteFile readAndWriteFile;
-    private long lineNumber;
+    private int endLine;
+    private int startLine;
     private long sumPaymentDto;
+    private List<PaymentDto> paymentDtoList;
+    private List<BalanceDto> balanceDtoList;
+    private ReadAndWriteFile readAndWriteFile;
+    private CountDownLatch latch;
 
-    public SalaryPaymentTheared(SalaryPaymentServer salaryPaymentServer, ReadAndWriteFile readAndWriteFile, long sumPaymentDto, long lineNumber) {
-        this.salaryPaymentServer = salaryPaymentServer;
+    public SalaryPaymentTheared(ReadAndWriteFile readAndWriteFile, List<PaymentDto> paymentDtoList, List<BalanceDto> balanceDtoList, long sumPaymentDto, CountDownLatch latch, int startLine, int endLine) {
         this.readAndWriteFile = readAndWriteFile;
         this.sumPaymentDto = sumPaymentDto;
-        this.lineNumber = lineNumber;
+        this.paymentDtoList = paymentDtoList;
+        this.balanceDtoList = balanceDtoList;
+        this.startLine = startLine;
+        this.endLine = endLine;
+        this.latch = latch;
     }
 
     @Override
     public void run() {
 
-        Path paymentPath = Paths.get(String.format(baseDirectory, FileTypeEnum.PAYMENT.getFileType()));
-        Path balancePath = Paths.get(String.format(baseDirectory, FileTypeEnum.BALANCE.getFileType()));
-        Path transactionPath = Paths.get(String.format(baseDirectory, FileTypeEnum.TRANSACTION.getFileType()));
-
         try {
-            PaymentDto paymentDto = readAndWriteFile.paymentReader(paymentPath, lineNumber);
 
-            if (!paymentDto.getDepositType().equals(DepositTypeEnum.DEBTOR.getDepositType())) {
+            readAndWriteFile.balanceWriter(paymentDtoList, balanceDtoList, sumPaymentDto, startLine, endLine);
+            readAndWriteFile.transactionWriter(paymentDtoList);
 
-                BalanceDto balanceDto = salaryPaymentServer.balanceFinder(balancePath, paymentDto);
+            System.out.println("********** Processing **********");
+            latch.countDown();
 
-                PaymentDto debtor = salaryPaymentServer.deptorFinder(readAndWriteFile, paymentPath);
-
-                readAndWriteFile.balanceWriter(balancePath, paymentPath, balanceDto, debtor, paymentDto, sumPaymentDto);
-
-                readAndWriteFile.transactionWriter(transactionPath, debtor, balanceDto, paymentDto);
-            }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            System.err.print(e.getMessage());
         }
     }
 }
