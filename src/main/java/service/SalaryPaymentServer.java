@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class SalaryPaymentServer {
 
     private final String baseDirectory = "..\\..\\SalaryPayment\\%s.txt";
@@ -26,7 +27,7 @@ public class SalaryPaymentServer {
         Path paymentPath = Paths.get(String.format(baseDirectory, FileTypeEnum.PAYMENT.getFileType()));
         Path balancePath = Paths.get(String.format(baseDirectory, FileTypeEnum.BALANCE.getFileType()));
 
-        ExecutorService threadPool = Executors.newFixedThreadPool(5);
+        ExecutorService threadPool = Executors.newFixedThreadPool(20);
 
         ReadAndWriteFile readAndWriteFile = new ReadAndWriteFile();
         List<PaymentDto> paymentDtoList = readAndWriteFile.paymentFileReader(paymentPath);
@@ -61,13 +62,14 @@ public class SalaryPaymentServer {
                 threadPool.execute(task);
 
                 startLine = lastIndex + 1;
-                if (paymentDtoList.size() > lastIndex + 100) {
+                if (paymentDtoList.size() >  lastIndex + 100) {
                     endLine = startLine + 99;
-                } else {
-                    endLine = paymentDtoList.size() - 1;
+                } else{
+                    endLine = paymentDtoList.size()-1;
                 }
                 lastIndex = endLine;
             }
+            threadPool.shutdown();
         } else {
             throw new LackSufficientBalanceException("Balance Not Sufficient Exception");
         }

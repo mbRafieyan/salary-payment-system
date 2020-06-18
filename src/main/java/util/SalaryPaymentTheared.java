@@ -35,10 +35,11 @@ public class SalaryPaymentTheared implements Runnable {
 
         try {
 
+            System.out.println("********** latch: " + latch.getCount() +" is processing **********");
+
             readAndWriteFile.balanceWriter(paymentDtoList, balanceDtoList, sumPaymentDto, startLine, endLine);
             readAndWriteFile.transactionWriter(paymentDtoList);
 
-            System.out.println("********** Processing **********");
             latch.countDown();
 
         } catch (Exception e) {
