@@ -62,10 +62,10 @@ public class SalaryPaymentServer {
                 threadPool.execute(task);
 
                 startLine = lastIndex + 1;
-                if (paymentDtoList.size() >  lastIndex + 100) {
+                if (paymentDtoList.size() > lastIndex + 100) {
                     endLine = startLine + 99;
-                } else{
-                    endLine = paymentDtoList.size()-1;
+                } else {
+                    endLine = paymentDtoList.size() - 1;
                 }
                 lastIndex = endLine;
             }
