@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         int fileRowCount = 10;
-        BigDecimal deptorDepositAmount = new BigDecimal(1000000000);
+        BigDecimal deptorDepositAmount = new BigDecimal(1000000000000);
 
         try {
 
@@ -33,14 +33,10 @@ public class Main {
             latch.await();
             System.out.println("********** FINISHED PROCESS **********");
 
-        } catch (LackSufficientBalanceException e) {
-
-            logger.error(e.getMessage(), e);
-            System.err.print(e.getMessage());
-
         } catch (Exception e) {
 
             logger.error(e.getMessage(), e);
+            System.err.print(e.getMessage());
             throw new Exception();
         }
     }

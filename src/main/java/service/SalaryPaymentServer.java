@@ -23,7 +23,7 @@ public class SalaryPaymentServer {
 
     private final String baseDirectory = "..\\..\\SalaryPayment\\%s.txt";
 
-    public CountDownLatch salaryPaymentThreadsExecuter(BigDecimal deptorDepositAmount) throws LackSufficientBalanceException, IOException {
+    public CountDownLatch salaryPaymentThreadsExecuter(BigDecimal deptorDepositAmount) throws Exception {
 
         Path paymentPath = Paths.get(String.format(baseDirectory, FileTypeEnum.PAYMENT.getFileType()));
         Path balancePath = Paths.get(String.format(baseDirectory, FileTypeEnum.BALANCE.getFileType()));
@@ -33,8 +33,6 @@ public class SalaryPaymentServer {
         ReadAndWriteFile readAndWriteFile = new ReadAndWriteFile();
         List<PaymentDto> paymentDtoList = readAndWriteFile.paymentFileReader(paymentPath);
         List<BalanceDto> balanceDtoList = readAndWriteFile.balanceFileReader(balancePath);
-
-        Files.write(balancePath, " ".getBytes());
 
         int paymentRowCount = paymentDtoList.size();
         BigDecimal sumPaymentDto = calculateSumPayments(paymentDtoList);
@@ -46,6 +44,8 @@ public class SalaryPaymentServer {
         CountDownLatch latch = new CountDownLatch(taskCount);
 
         if (deptorDepositAmount.compareTo(sumPaymentDto) == 1) {
+
+            Files.write(balancePath, " ".getBytes());
 
             int startLine = 0;
             int endLine = 0;
