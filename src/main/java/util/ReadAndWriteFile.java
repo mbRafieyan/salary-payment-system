@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,7 +23,7 @@ public class ReadAndWriteFile {
     public final Logger logger = Logger.getLogger(ReadAndWriteFile.class);
     private final String baseDirectory = "..\\..\\SalaryPayment\\%s.txt";
 
-    public void timeCreationFileWriter(Path path, long deptorDepositAmount, int rowCount) throws Exception {
+    public void timeCreationFileWriter(Path path, BigDecimal deptorDepositAmount, int rowCount) throws Exception {
 
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
 
@@ -41,7 +42,7 @@ public class ReadAndWriteFile {
         }
     }
 
-    private String createPaymentFile(long deptorDepositAmount, int rowCount) throws IOException {
+    private String createPaymentFile(BigDecimal deptorDepositAmount, int rowCount) throws IOException {
 
         StringBuilder paymentRow = new StringBuilder();
 
@@ -50,7 +51,7 @@ public class ReadAndWriteFile {
             int randomNum = ThreadLocalRandom.current().nextInt(100, 1000 + 1);
 
             String creditorDepositNumber = "1.20.100." + i;
-            long creditorDepositAmount = randomNum;
+            BigDecimal creditorDepositAmount = new BigDecimal(randomNum);
             PaymentDto payment = new PaymentDto(creditorDepositNumber, creditorDepositAmount, DepositTypeEnum.CREDITOR.getDepositType());
 
             paymentRow.append(payment.toString());
@@ -63,14 +64,14 @@ public class ReadAndWriteFile {
         return paymentRow.toString();
     }
 
-    private String createBalanceFile(long deptorDepositAmount, int rowCount) throws IOException {
+    private String createBalanceFile(BigDecimal deptorDepositAmount, int rowCount) throws IOException {
 
         StringBuilder balanceRow = new StringBuilder();
 
         for (int i = 0; i < rowCount; i++) {
 
             String creatorDepositNumber = "1.20.100." + i;
-            long creatorDepositAmount = 0;
+            BigDecimal creatorDepositAmount = new BigDecimal(0);
             BalanceDto balanceDto = new BalanceDto(creatorDepositNumber, creatorDepositAmount);
 
             balanceRow.append(balanceDto.toString());
@@ -97,7 +98,7 @@ public class ReadAndWriteFile {
 
             String depositType = paymentArray[0];
             String depositNumber = paymentArray[1];
-            long depositAmount = Long.parseLong(paymentArray[2]);
+            BigDecimal depositAmount = new BigDecimal(paymentArray[2]);
 
             PaymentDto payment = new PaymentDto(depositNumber, depositAmount, depositType);
             payments.add(payment);
@@ -119,7 +120,7 @@ public class ReadAndWriteFile {
 
                 String[] balanceArray = strBalance.trim().split(" ");
                 String depositNumber = balanceArray[0];
-                long depositAmount = Long.parseLong(balanceArray[1]);
+                BigDecimal depositAmount = new BigDecimal(balanceArray[1]);
 
                 BalanceDto balanceDto = new BalanceDto(depositNumber, depositAmount);
                 balanceDtos.add(balanceDto);
@@ -130,7 +131,7 @@ public class ReadAndWriteFile {
         return balanceDtos;
     }
 
-    public synchronized void balanceWriter(List<PaymentDto> PaymentDtos, List<BalanceDto> balanceDtoList, long sumPaymentDto, int startLine, int endLine) throws IOException {
+    public synchronized void balanceWriter(List<PaymentDto> paymentDtos, List<BalanceDto> balanceDtoList, BigDecimal sumPaymentDto, int startLine, int endLine) throws IOException {
 
         Path balancePath = Paths.get(String.format(baseDirectory, FileTypeEnum.BALANCE.getFileType()));
 
@@ -138,7 +139,7 @@ public class ReadAndWriteFile {
 
         for (int i = startLine; i <= endLine; i++) {
 
-            PaymentDto paymentDto = PaymentDtos.get(i);
+            PaymentDto paymentDto = paymentDtos.get(i);
             BalanceDto balanceDto = new BalanceDto();
 
             if (!paymentDto.getDepositType().equals(DepositTypeEnum.DEBTOR.getDepositType())) {
@@ -147,14 +148,14 @@ public class ReadAndWriteFile {
                 balanceDto.setDepositNumber(paymentDto.getDepositNumber());
 
                 if (balanceDtos.size() > 0) {
-                    balanceDto.setDepositAmount(paymentDto.getDepositAmount() + balanceDtos.get(0).getDepositAmount());
+                    balanceDto.setDepositAmount(paymentDto.getDepositAmount().add(balanceDtos.get(0).getDepositAmount()));
                 } else {
                     balanceDto.setDepositAmount(paymentDto.getDepositAmount());
                 }
 
             } else {
                 balanceDto.setDepositNumber(paymentDto.getDepositNumber());
-                balanceDto.setDepositAmount(paymentDto.getDepositAmount() - sumPaymentDto);
+                balanceDto.setDepositAmount(paymentDto.getDepositAmount().subtract(sumPaymentDto));
             }
             newBalanceDtoList.add(balanceDto);
         }
@@ -164,16 +165,19 @@ public class ReadAndWriteFile {
         }
     }
 
-    public synchronized void transactionWriter(List<PaymentDto> paymentDtos) throws IOException {
+    public synchronized void transactionWriter(List<PaymentDto> paymentDtos, int startLine, int endLine) throws IOException {
 
         Path transactionPath = Paths.get(String.format(baseDirectory, FileTypeEnum.TRANSACTION.getFileType()));
 
         List<PaymentDto> balanceDtos = paymentDtos.stream().filter(s -> s.getDepositType().equals(DepositTypeEnum.DEBTOR.getDepositType())).collect(Collectors.toList());
         PaymentDto debtor = balanceDtos.get(0);
 
-        List<TransactionDto> transactionDtoList = new ArrayList<TransactionDto>();
+        List<TransactionDto> transactionDtoList = new ArrayList<>();
 
-        for (PaymentDto paymentDto : paymentDtos) {
+        for (int i = startLine; i <= endLine; i++) {
+
+            PaymentDto paymentDto = paymentDtos.get(i);
+
             if (!paymentDto.getDepositType().equals(DepositTypeEnum.DEBTOR.getDepositType())) {
 
                 TransactionDto transactionDto = new TransactionDto(debtor.getDepositNumber(), paymentDto.getDepositNumber(), paymentDto.getDepositAmount());

@@ -5,6 +5,7 @@ import dto.PaymentDto;
 import main.Main;
 import org.apache.log4j.Logger;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -14,13 +15,13 @@ public class SalaryPaymentTheared implements Runnable {
 
     private int endLine;
     private int startLine;
-    private long sumPaymentDto;
+    private BigDecimal sumPaymentDto;
     private List<PaymentDto> paymentDtoList;
     private List<BalanceDto> balanceDtoList;
     private ReadAndWriteFile readAndWriteFile;
     private CountDownLatch latch;
 
-    public SalaryPaymentTheared(ReadAndWriteFile readAndWriteFile, List<PaymentDto> paymentDtoList, List<BalanceDto> balanceDtoList, long sumPaymentDto, CountDownLatch latch, int startLine, int endLine) {
+    public SalaryPaymentTheared(ReadAndWriteFile readAndWriteFile, List<PaymentDto> paymentDtoList, List<BalanceDto> balanceDtoList, BigDecimal sumPaymentDto, CountDownLatch latch, int startLine, int endLine) {
         this.readAndWriteFile = readAndWriteFile;
         this.sumPaymentDto = sumPaymentDto;
         this.paymentDtoList = paymentDtoList;
@@ -35,10 +36,8 @@ public class SalaryPaymentTheared implements Runnable {
 
         try {
 
-            System.out.println("********** latch: " + latch.getCount() +" is processing **********");
-
             readAndWriteFile.balanceWriter(paymentDtoList, balanceDtoList, sumPaymentDto, startLine, endLine);
-            readAndWriteFile.transactionWriter(paymentDtoList);
+            readAndWriteFile.transactionWriter(paymentDtoList, startLine, endLine);
 
             latch.countDown();
 

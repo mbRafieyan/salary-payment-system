@@ -1,14 +1,16 @@
 package dto;
 
+import java.math.BigDecimal;
+
 public class BalanceDto {
 
     private String depositNumber;
-    private long depositAmount;
+    private BigDecimal depositAmount;
 
     public BalanceDto() {
     }
 
-    public BalanceDto(String depositNumber, long depositAmount) {
+    public BalanceDto(String depositNumber, BigDecimal depositAmount) {
         this.depositNumber = depositNumber;
         this.depositAmount = depositAmount;
     }
@@ -17,7 +19,7 @@ public class BalanceDto {
         this.depositNumber = depositNumber;
     }
 
-    public void setDepositAmount(long depositAmount) {
+    public void setDepositAmount(BigDecimal depositAmount) {
         this.depositAmount = depositAmount;
     }
 
@@ -25,7 +27,7 @@ public class BalanceDto {
         return depositNumber;
     }
 
-    public long getDepositAmount() {
+    public BigDecimal getDepositAmount() {
         return depositAmount;
     }
 

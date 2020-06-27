@@ -4,10 +4,10 @@ import exception.LackSufficientBalanceException;
 import org.apache.log4j.Logger;
 import service.SalaryPaymentServer;
 
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 
 public class Main {
@@ -16,8 +16,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        int fileRowCount = 10000;
-        long deptorDepositAmount = 1000000000;
+        int fileRowCount = 10;
+        BigDecimal deptorDepositAmount = new BigDecimal(1000000000);
 
         try {
 
@@ -29,6 +29,7 @@ public class Main {
 
             CountDownLatch latch = salaryPaymentServer.salaryPaymentThreadsExecuter(deptorDepositAmount);
 
+            System.out.println("************* PROCESSING *************");
             latch.await();
             System.out.println("********** FINISHED PROCESS **********");
 

@@ -9,6 +9,7 @@ import util.ReadAndWriteFile;
 import util.SalaryPaymentTheared;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,12 +23,12 @@ public class SalaryPaymentServer {
 
     private final String baseDirectory = "..\\..\\SalaryPayment\\%s.txt";
 
-    public CountDownLatch salaryPaymentThreadsExecuter(long deptorDepositAmount) throws LackSufficientBalanceException, IOException {
+    public CountDownLatch salaryPaymentThreadsExecuter(BigDecimal deptorDepositAmount) throws LackSufficientBalanceException, IOException {
 
         Path paymentPath = Paths.get(String.format(baseDirectory, FileTypeEnum.PAYMENT.getFileType()));
         Path balancePath = Paths.get(String.format(baseDirectory, FileTypeEnum.BALANCE.getFileType()));
 
-        ExecutorService threadPool = Executors.newFixedThreadPool(20);
+        ExecutorService threadPool = Executors.newFixedThreadPool(5);
 
         ReadAndWriteFile readAndWriteFile = new ReadAndWriteFile();
         List<PaymentDto> paymentDtoList = readAndWriteFile.paymentFileReader(paymentPath);
@@ -36,15 +37,15 @@ public class SalaryPaymentServer {
         Files.write(balancePath, " ".getBytes());
 
         int paymentRowCount = paymentDtoList.size();
-        long sumPaymentDto = calculateSumPayments(paymentDtoList);
+        BigDecimal sumPaymentDto = calculateSumPayments(paymentDtoList);
 
-        int threadRowCount = 100;
-        int threadCount = (paymentRowCount / threadRowCount);
-        threadCount++;
+        int taskRowCount = 100;
+        int taskCount = (paymentRowCount / taskRowCount);
+        taskCount++;
 
-        CountDownLatch latch = new CountDownLatch(threadCount);
+        CountDownLatch latch = new CountDownLatch(taskCount);
 
-        if (deptorDepositAmount > sumPaymentDto) {
+        if (deptorDepositAmount.compareTo(sumPaymentDto) == 1) {
 
             int startLine = 0;
             int endLine = 0;
@@ -56,7 +57,7 @@ public class SalaryPaymentServer {
 
             int lastIndex = endLine;
 
-            for (int i = 0; i < threadCount; i++) {
+            for (int i = 0; i < taskCount; i++) {
 
                 Runnable task = new SalaryPaymentTheared(readAndWriteFile, paymentDtoList, balanceDtoList, sumPaymentDto, latch, startLine, endLine);
                 threadPool.execute(task);
@@ -77,7 +78,7 @@ public class SalaryPaymentServer {
         return latch;
     }
 
-    public void createFile(long deptorDepositAmount, int rowCount) throws Exception {
+    public void createFile(BigDecimal deptorDepositAmount, int rowCount) throws Exception {
 
         Path paymentPath = Paths.get(String.format(baseDirectory, FileTypeEnum.PAYMENT.getFileType()));
         Path balancePath = Paths.get(String.format(baseDirectory, FileTypeEnum.BALANCE.getFileType()));
@@ -91,9 +92,9 @@ public class SalaryPaymentServer {
         }
     }
 
-    private long calculateSumPayments(List<PaymentDto> paymentDtoList) {
+    private BigDecimal calculateSumPayments(List<PaymentDto> paymentDtoList) {
 
-        return paymentDtoList.stream().filter(s -> !s.getDepositType().equals(DepositTypeEnum.DEBTOR.getDepositType())).mapToLong(s -> s.getDepositAmount()).sum();
+        return paymentDtoList.stream().filter(s -> !s.getDepositType().equals(DepositTypeEnum.DEBTOR.getDepositType())).map(PaymentDto::getDepositAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
 
