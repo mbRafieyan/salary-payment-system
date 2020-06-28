@@ -16,8 +16,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        int fileRowCount = 10;
-        BigDecimal deptorDepositAmount = new BigDecimal(1000000000000);
+        int fileRowCount = 1000;
+        BigDecimal deptorDepositAmount = new BigDecimal(1000000000);
 
         try {
 
